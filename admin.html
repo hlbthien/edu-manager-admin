@@ -1,0 +1,1888 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - EduManager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+        }
+        
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: #1e293b;
+            color: white;
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid #334155;
+            margin-bottom: 20px;
+        }
+        
+        .sidebar-header h1 {
+            font-size: 20px;
+            color: #60a5fa;
+            font-weight: 600;
+        }
+        
+        .user-info {
+            font-size: 14px;
+            color: #94a3b8;
+            margin-top: 8px;
+        }
+        
+        .nav-item {
+            padding: 14px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 4px solid transparent;
+            font-size: 15px;
+        }
+        
+        .nav-item:hover {
+            background: #334155;
+        }
+        
+        .nav-item.active {
+            background: #334155;
+            border-left-color: #60a5fa;
+            color: #60a5fa;
+        }
+        
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 16px;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            margin-left: 280px;
+            background: #f8fafc;
+            min-height: 100vh;
+        }
+        
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .content-header h2 {
+            color: #1e293b;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-left: 6px solid #2563eb;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 3em;
+            font-weight: 800;
+            color: #2563eb;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+        
+        .stat-label {
+            color: #64748b;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        /* Tables */
+        .table-container {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 16px 20px;
+            text-align: left;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #475569;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        tr:hover td {
+            background: #f8fafc;
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+        
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+        
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #b91c1c;
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background: #16a34a;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #15803d;
+            transform: translateY(-2px);
+        }
+        
+        .btn-warning {
+            background: #d97706;
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: #b45309;
+        }
+        
+        /* Tabs */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease-in;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Token display */
+        .token-display {
+            background: #1e293b;
+            color: #60a5fa;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            margin: 8px 0;
+            word-break: break-all;
+            border: 1px solid #334155;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 13px;
+            border-radius: 8px;
+        }
+        
+        /* Forms */
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+            font-size: 14px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            width: 500px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #6b7280;
+            transition: color 0.3s ease;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .close-btn:hover {
+            color: #374151;
+            background: #f3f4f6;
+            border-radius: 6px;
+        }
+        
+        /* Role badges */
+        .role-badge {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .role-admin {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        
+        .role-teacher {
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #dbeafe;
+        }
+        
+        .role-viewer {
+            background: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #dcfce7;
+        }
+        
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 60px 40px;
+            color: #64748b;
+            font-size: 16px;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #e2e8f0;
+            border-top: 3px solid #2563eb;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 12px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            z-index: 3000;
+            animation: slideInRight 0.3s ease-out;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            max-width: 400px;
+        }
+        
+        .notification.success {
+            background: #16a34a;
+        }
+        
+        .notification.error {
+            background: #dc2626;
+        }
+        
+        .notification.info {
+            background: #2563eb;
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* Section titles */
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 40px 0 20px 0;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 40px;
+            color: #64748b;
+        }
+        
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+        
+        .empty-state h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #475569;
+        }
+        
+        .empty-state p {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        /* Standard Editor Table */
+        .standard-editor-table {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .standard-editor-table th {
+            background: #f8fafc;
+            font-weight: 600;
+            padding: 16px 20px;
+        }
+        
+        .standard-editor-table td {
+            padding: 12px 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .group-header {
+            background: #eff6ff !important;
+            font-weight: 700;
+            color: #1e40af;
+        }
+        
+        .group-header td {
+            padding: 14px 20px;
+            border-bottom: 2px solid #dbeafe;
+        }
+        
+        .standard-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        
+        .standard-input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .unit-cell {
+            color: #64748b;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 250px;
+            }
+            
+            .main-content {
+                margin-left: 250px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                margin-bottom: 0;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+            
+            .admin-container {
+                flex-direction: column;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .content-header {
+                flex-direction: column;
+                gap: 16px;
+                align-items: flex-start;
+            }
+            
+            .content-header h2 {
+                font-size: 24px;
+            }
+            
+            .action-buttons {
+                justify-content: flex-start;
+            }
+            
+            .standard-editor-table {
+                font-size: 14px;
+            }
+            
+            .standard-editor-table th,
+            .standard-editor-table td {
+                padding: 10px 12px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 16px;
+            }
+            
+            .stat-card {
+                padding: 20px;
+            }
+            
+            .stat-number {
+                font-size: 2.5em;
+            }
+            
+            th, td {
+                padding: 12px 16px;
+            }
+            
+            .modal-content {
+                padding: 24px;
+                margin: 20px;
+            }
+            
+            .standard-editor-table {
+                font-size: 13px;
+            }
+        }
+
+        /* Đảm bảo nút Save luôn hiển thị */
+        #saveBtn {
+            display: inline-flex !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1>🎛️ Admin Panel</h1>
+                <div class="user-info" id="userInfo">Admin User</div>
+            </div>
+            
+            <div class="nav-item active" data-tab="dashboard">
+                <i>📊</i> Dashboard
+            </div>
+            <div class="nav-item" data-tab="tokens">
+                <i>🔐</i> Quản lý Token
+            </div>
+            <div class="nav-item" data-tab="users">
+                <i>👥</i> Quản lý Users
+            </div>
+            <div class="nav-item" data-tab="standards">
+                <i>🏷️</i> Quản lý Tiêu chuẩn
+            </div>
+            <div class="nav-item" data-tab="courses">
+                <i>📚</i> Quản lý Khóa học
+            </div>
+            <div class="nav-item" data-tab="students">
+                <i>👨‍🎓</i> Quản lý Học viên
+            </div>
+            <div class="nav-item" data-tab="scores">
+                <i>📝</i> Quản lý Điểm số
+            </div>
+            <div class="nav-item" data-tab="import-logs">
+                <i>📥</i> Lịch sử Import
+            </div>
+            <div class="nav-item" onclick="logout()" style="margin-top: 20px; border-top: 1px solid #334155; padding-top: 20px;">
+                <i>🚪</i> Đăng xuất
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <div class="content-header">
+                    <h2>📊 Dashboard</h2>
+                    <button class="btn btn-primary" onclick="refreshStats()">
+                        <i>🔄</i> Refresh
+                    </button>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalUsers">0</div>
+                        <div class="stat-label">Total Users</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalCourses">0</div>
+                        <div class="stat-label">Khóa học</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalStudents">0</div>
+                        <div class="stat-label">Học viên</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalImports">0</div>
+                        <div class="stat-label">Lần Import</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="activeTokens">0</div>
+                        <div class="stat-label">Tokens Active</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalScores">0</div>
+                        <div class="stat-label">Bản ghi Điểm</div>
+                    </div>
+                </div>
+                
+                <h3 class="section-title">📈 Hoạt động gần đây</h3>
+                <div class="table-container">
+                    <table id="recentActivity">
+                        <thead>
+                            <tr>
+                                <th>Thời gian</th>
+                                <th>User</th>
+                                <th>Hành động</th>
+                                <th>Chi tiết</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activityTableBody">
+                            <tr>
+                                <td colspan="4" class="loading">
+                                    <div class="loading-spinner"></div>Đang tải hoạt động...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Tokens Management Tab -->
+            <div id="tokens" class="tab-content">
+                <div class="content-header">
+                    <h2>🔐 Quản lý Token</h2>
+                </div>
+                
+                <!-- Token Form -->
+                <div class="table-container" style="padding: 30px; margin-bottom: 30px;">
+                    <h3 style="margin-bottom: 24px; color: #1e293b; font-size: 20px;">🚀 Lấy Token mới</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                        <div class="form-group">
+                            <label>API URL 1 (JIRA):</label>
+                            <input type="text" id="apiUrl1" placeholder="URL API JIRA" class="form-control" value="https://jira.shlx.vn">
+                        </div>
+                        <div class="form-group">
+                            <label>API URL 2 (LMS):</label>
+                            <input type="text" id="apiUrl2" placeholder="URL API LMS" class="form-control" value="https://admin.lms.shlx.vn">
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                        <div class="form-group">
+                            <label>Username:</label>
+                            <input type="text" id="username" placeholder="Tên đăng nhập" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Password:</label>
+                            <input type="password" id="password" placeholder="Mật khẩu" class="form-control">
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 12px;">
+                        <button class="btn btn-primary" onclick="login()">
+                            <i>🚀</i> Lấy 2 Tokens
+                        </button>
+                    </div>
+                    <div id="tokenResult" style="margin-top: 24px;"></div>
+                </div>
+                
+                <!-- Tokens List -->
+                <h3 class="section-title">📋 Tokens hiện có</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Loại Token</th>
+                                <th>Token</th>
+                                <th>Ngày tạo</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tokensTableBody">
+                            <tr>
+                                <td colspan="5" class="loading">
+                                    <div class="loading-spinner"></div>Đang tải tokens...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Users Management Tab -->
+            <div id="users" class="tab-content">
+                <div class="content-header">
+                    <h2>👥 Quản lý Users</h2>
+                    <button class="btn btn-primary" onclick="showAddUserModal()">
+                        <i>➕</i> Thêm User mới
+                    </button>
+                </div>
+                
+                <!-- Users List -->
+                <h3 class="section-title">📋 Danh sách Users</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Họ tên</th>
+                                <th>Role</th>
+                                <th>Ngày tạo</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <tr>
+                                <td colspan="6" class="loading">
+                                    <div class="loading-spinner"></div>Đang tải users...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Standards Management Tab - ĐƠN GIẢN HÓA -->
+            <div id="standards" class="tab-content">
+                <div class="content-header">
+                    <h2>🏷️ Quản lý Tiêu chuẩn Chấm điểm</h2>
+                    <div style="display: flex; gap: 12px;">
+                        <button class="btn btn-danger" onclick="deleteCurrentStandard()" id="deleteBtn" style="display: none;">
+                            <i>🗑️</i> Xóa Tiêu chuẩn
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Dropdown chọn mã hạng -->
+                <div class="form-group">
+    <label>Chọn mã hạng để chỉnh sửa:</label>
+    <select id="maHangDropdown" class="form-control" onchange="loadStandard(this.value)">
+        <option value="">-- Chọn mã hạng --</option>
+        <!-- Các mã hạng từ API sẽ được thêm here -->
+    </select>
+</div>
+
+                <!-- Standard Editor Table -->
+                <div class="table-container">
+                    <table class="standard-editor-table">
+                        <thead>
+                            <tr>
+                                <th width="50">STT</th>
+                                <th>TIÊU CHUẨN</th>
+                                <th width="120">GIÁ TRỊ</th>
+                                <th width="80">ĐƠN VỊ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="standardEditorBody">
+                            <!-- Sẽ được render bằng JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Action Buttons -->
+                <div style="display: flex; gap: 12px; margin-top: 20px;">
+    <button class="btn btn-success" onclick="createNewStandard()">
+        ➕ Tạo tiêu chuẩn mới
+    </button>
+    <button class="btn btn-primary" onclick="saveStandard()">
+        💾 Lưu
+    </button>
+</div>
+
+                <!-- Current Standard Info -->
+                <div id="currentStandardInfo" style="margin-top: 20px; padding: 16px; background: #f0fdf4; border-radius: 8px; display: none;">
+                    <strong>📋 Đang chỉnh sửa:</strong> 
+                    <span id="currentMaHang"></span> - 
+                    <span id="currentUpdateTime"></span>
+                </div>
+            </div>
+            
+            <!-- Other Tabs (Placeholder) -->
+            <div id="courses" class="tab-content">
+                <div class="content-header">
+                    <h2>📚 Quản lý Khóa học</h2>
+                </div>
+                <div class="empty-state">
+                    <i>📚</i>
+                    <h3>Chức năng đang phát triển</h3>
+                    <p>Quản lý khóa học sẽ sớm có mặt</p>
+                </div>
+            </div>
+            
+            <div id="students" class="tab-content">
+                <div class="content-header">
+                    <h2>👨‍🎓 Quản lý Học viên</h2>
+                </div>
+                <div class="empty-state">
+                    <i>👨‍🎓</i>
+                    <h3>Chức năng đang phát triển</h3>
+                    <p>Quản lý học viên sẽ sớm có mặt</p>
+                </div>
+            </div>
+            
+            <div id="scores" class="tab-content">
+                <div class="content-header">
+                    <h2>📝 Quản lý Điểm số</h2>
+                </div>
+                <div class="empty-state">
+                    <i>📝</i>
+                    <h3>Chức năng đang phát triển</h3>
+                    <p>Quản lý điểm số sẽ sớm có mặt</p>
+                </div>
+            </div>
+            
+            <div id="import-logs" class="tab-content">
+                <div class="content-header">
+                    <h2>📥 Lịch sử Import</h2>
+                </div>
+                <div class="empty-state">
+                    <i>📥</i>
+                    <h3>Chức năng đang phát triển</h3>
+                    <p>Lịch sử import sẽ sớm có mặt</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div id="addUserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">➕ Thêm User mới</h3>
+                <button class="close-btn" onclick="hideAddUserModal()">&times;</button>
+            </div>
+            
+            <div class="form-group">
+                <label>Username:</label>
+                <input type="text" id="newUsername" placeholder="Tên đăng nhập" class="form-control">
+            </div>
+            
+            <div class="form-group">
+                <label>Password:</label>
+                <input type="password" id="newPassword" placeholder="Mật khẩu" class="form-control">
+            </div>
+            
+            <div class="form-group">
+                <label>Họ tên:</label>
+                <input type="text" id="newFullName" placeholder="Họ và tên" class="form-control">
+            </div>
+            
+            <div class="form-group">
+                <label>Role:</label>
+                <select id="newRole" class="form-control">
+                    <option value="viewer">Viewer</option>
+                    <option value="teacher">Teacher</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            
+            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 32px;">
+                <button class="btn" onclick="hideAddUserModal()" style="background: #6b7280; color: white;">Hủy</button>
+                <button class="btn btn-primary" onclick="createNewUser()">Tạo User</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== GLOBAL VARIABLES ====================
+        let currentEditingStandard = null;
+        let standardsData = [];
+        let currentMaHang = '';
+
+        // ==================== INITIALIZATION ====================
+        document.addEventListener('DOMContentLoaded', async function() {
+            // KIỂM TRA LOGIN NGHIÊM NGẶT
+            const userLoggedIn = localStorage.getItem('userLoggedIn');
+            const userRole = localStorage.getItem('userRole');
+            const username = localStorage.getItem('username');
+
+            console.log('🔐 [ADMIN] Strict auth check:', { userLoggedIn, userRole, username });
+
+            if (userLoggedIn !== 'true' || userRole !== 'admin') {
+                console.log('❌ [ADMIN] Unauthorized direct access attempt');
+                
+                // Xóa mọi session cũ
+                localStorage.clear();
+                sessionStorage.clear();
+                
+                // Redirect ngay lập tức
+                alert('❌ Vui lòng đăng nhập với tài khoản admin!');
+                window.location.href = '/login.html';
+                return;
+            }
+
+            // Nếu đã login và là admin
+            initializeAdminPanel();
+        });
+
+       function initializeAdminPanel() {
+    // Hiển thị user info từ localStorage
+    const username = localStorage.getItem('username') || 'Admin';
+    const fullName = localStorage.getItem('fullName') || 'Quản trị viên';
+    
+    document.getElementById('userInfo').textContent = `${fullName} (${username})`;
+    
+    // Setup navigation với auto-load standards
+    setupNavigation();
+    
+    // Load initial data
+    loadDashboardStats();
+    loadTokensData();
+    loadUsersData();
+    // 🎯 THÊM: Tự động load standards khi khởi động (nếu đang ở tab standards)
+    setTimeout(() => {
+        if (document.getElementById('standards').classList.contains('active')) {
+            console.log('🎯 Auto-loading standards on page load...');
+            loadStandardsForDropdown();
+        }
+    }, 500);
+    showNotification(`✅ Chào mừng ${fullName} đến Admin Panel!`, 'success');
+}
+        
+// ==================== NAVIGATION ====================
+        function setupNavigation() {
+    const navItems = document.querySelectorAll('.nav-item[data-tab]');
+    navItems.forEach(item => {
+        item.addEventListener('click', function() {
+            navItems.forEach(nav => nav.classList.remove('active'));
+            this.classList.add('active');
+            showTab(this.dataset.tab);
+            
+            // 🎯 SỬA: Tự động load data khi chuyển tab
+            switch(this.dataset.tab) {
+                case 'dashboard':
+                    loadDashboardStats();
+                    break;
+                case 'tokens':
+                    loadTokensData();
+                    break;
+                case 'users':
+                    loadUsersData();
+                    break;
+                case 'standards':
+                    console.log('🎯 Loading standards data...');
+                    loadStandardsForDropdown();
+                    break;
+            }
+        });
+    });
+}
+        
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        // ==================== TOKEN MANAGEMENT ====================
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const apiUrl1 = document.getElementById('apiUrl1').value;
+            const apiUrl2 = document.getElementById('apiUrl2').value;
+
+            const tokenResult = document.getElementById('tokenResult');
+            tokenResult.innerHTML = '<div style="color: #64748b; padding: 12px; text-align: center;">🔄 Đang lấy tokens...</div>';
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username,
+                        password,
+                        apiUrl1,
+                        apiUrl2
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    tokenResult.innerHTML = `
+                        <div style="color: #16a34a; background: #f0fdf4; padding: 16px; border-radius: 12px;">
+                            <strong>✅ Lấy tokens thành công!</strong>
+                        </div>
+                    `;
+                    showNotification('✅ Lấy tokens thành công!', 'success');
+                    loadTokensData();
+                    
+                    // Clear form
+                    document.getElementById('username').value = '';
+                    document.getElementById('password').value = '';
+                    document.getElementById('apiUrl1').value = 'https://jira.shlx.vn';
+                    document.getElementById('apiUrl2').value = 'https://admin.lms.shlx.vn';
+                } else {
+                    tokenResult.innerHTML = `
+                        <div style="color: #dc2626; background: #fef2f2; padding: 16px; border-radius: 12px;">
+                            <strong>❌ Lỗi:</strong> ${result.error}
+                        </div>
+                    `;
+                    showNotification('❌ Lấy tokens thất bại', 'error');
+                }
+            } catch (error) {
+                tokenResult.innerHTML = `
+                    <div style="color: #dc2626; background: #fef2f2; padding: 16px; border-radius: 12px;">
+                        <strong>❌ Lỗi kết nối:</strong> ${error.message}
+                    </div>
+                `;
+                showNotification('❌ Lỗi kết nối API', 'error');
+            }
+        }
+        
+        async function loadTokensData() {
+            try {
+                const response = await fetch('/api/auth/all-tokens');
+                const result = await response.json();
+                
+                const tbody = document.getElementById('tokensTableBody');
+                
+                if (result.tokens && result.tokens.length > 0) {
+                    tbody.innerHTML = result.tokens.map(token => `
+                        <tr>
+                            <td>${token.id}</td>
+                            <td><strong>${token.token_type}</strong></td>
+                            <td>
+                                <div style="background: #1e293b; color: #60a5fa; padding: 8px 12px; border-radius: 6px; font-family: monospace; font-size: 12px;">
+                                    ${token.token_value ? token.token_value.substring(0, 30) + '...' : 'Empty'}
+                                </div>
+                            </td>
+                            <td>${new Date(token.created_at).toLocaleDateString('vi-VN')}</td>
+                            <td class="action-buttons">
+                                <button class="btn btn-danger btn-sm" onclick="deleteToken(${token.id})">
+                                    <i>🗑️</i> Xóa
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: #64748b; padding: 40px;">
+                                📝 Không có tokens nào
+                            </td>
+                        </tr>
+                    `;
+                }
+                
+            } catch (error) {
+                const tbody = document.getElementById('tokensTableBody');
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: #dc2626; padding: 40px;">
+                            ❌ Lỗi kết nối API
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+        
+        async function deleteToken(tokenId) {
+            if (!confirm('Bạn có chắc muốn xóa token này?')) return;
+            
+            try {
+                const response = await fetch(`/api/admin/tokens/${tokenId}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('✅ Token đã được xóa', 'success');
+                    loadTokensData();
+                } else {
+                    showNotification('❌ Lỗi xóa token: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showNotification('❌ Lỗi kết nối API', 'error');
+            }
+        }
+
+        // ==================== USER MANAGEMENT ====================
+        async function loadUsersData() {
+            try {
+                const response = await fetch('/api/auth/users');
+                const result = await response.json();
+                
+                const tbody = document.getElementById('usersTableBody');
+                
+                if (result.success && result.users && result.users.length > 0) {
+                    tbody.innerHTML = result.users.map(user => `
+                        <tr>
+                            <td>${user.id}</td>
+                            <td><strong>${user.username}</strong></td>
+                            <td>${user.full_name || 'N/A'}</td>
+                            <td>
+                                <select class="form-control" style="width: auto; display: inline-block;" 
+                                        onchange="updateUserRole(${user.id}, this.value)">
+                                    <option value="viewer" ${user.role === 'viewer' ? 'selected' : ''}>Viewer</option>
+                                    <option value="teacher" ${user.role === 'teacher' ? 'selected' : ''}>Teacher</option>
+                                    <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
+                                </select>
+                            </td>
+                            <td>${new Date(user.created_at).toLocaleDateString('vi-VN')}</td>
+                            <td class="action-buttons">
+                                <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.id}, '${user.username}')">
+                                    <i>🗑️</i> Xóa
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: #64748b; padding: 40px;">
+                                📝 Không có users nào
+                            </td>
+                        </tr>
+                    `;
+                }
+                
+            } catch (error) {
+                const tbody = document.getElementById('usersTableBody');
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: #dc2626; padding: 40px;">
+                            ❌ Lỗi kết nối API users
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+        
+        function showAddUserModal() {
+            document.getElementById('addUserModal').style.display = 'flex';
+            // Clear form
+            document.getElementById('newUsername').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('newFullName').value = '';
+            document.getElementById('newRole').value = 'viewer';
+        }
+        
+        function hideAddUserModal() {
+            document.getElementById('addUserModal').style.display = 'none';
+        }
+        
+        async function createNewUser() {
+            const username = document.getElementById('newUsername').value;
+            const password = document.getElementById('newPassword').value;
+            const fullName = document.getElementById('newFullName').value;
+            const role = document.getElementById('newRole').value;
+            
+            if (!username || !password) {
+                showNotification('❌ Username và password là bắt buộc', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username,
+                        password,
+                        full_name: fullName,
+                        role
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('✅ User đã được tạo thành công', 'success');
+                    hideAddUserModal();
+                    loadUsersData();
+                } else {
+                    showNotification('❌ Lỗi tạo user: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showNotification('❌ Lỗi kết nối API', 'error');
+            }
+        }
+        
+        async function updateUserRole(userId, newRole) {
+            try {
+                const response = await fetch(`/api/admin/users/${userId}/role`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        role: newRole
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification(`✅ Đã cập nhật role thành ${newRole}`, 'success');
+                } else {
+                    showNotification('❌ Lỗi cập nhật role: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showNotification('❌ Lỗi kết nối API', 'error');
+            }
+        }
+        
+        async function deleteUser(userId, username) {
+            if (!confirm(`Bạn có chắc muốn xóa user "${username}"?`)) return;
+            
+            try {
+                const response = await fetch(`/api/admin/users/${userId}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('✅ User đã được xóa', 'success');
+                    loadUsersData();
+                } else {
+                    showNotification('❌ Lỗi xóa user: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showNotification('❌ Lỗi kết nối API', 'error');
+            }
+        }
+
+       // ==================== SIMPLIFIED STANDARDS MANAGEMENT ====================
+
+async function loadStandardsForDropdown() {
+    try {
+        console.log('🔍 Đang gọi API standards...');
+        const response = await fetch('/api/admin/standards/all');
+        
+        console.log('📡 Response status:', response.status);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log('✅ API response:', result);
+        
+        if (result.success) {
+            standardsData = result.standards || [];
+            console.log('📋 Standards data loaded:', standardsData);
+            updateMaHangDropdown();
+            
+            if (standardsData.length === 0) {
+                showNotification('ℹ️ Chưa có tiêu chuẩn nào. Hãy tạo mới!', 'info');
+            } else {
+                showNotification(`✅ Đã tải ${standardsData.length} tiêu chuẩn`, 'success');
+            }
+        } else {
+            throw new Error(result.error || 'Lỗi không xác định từ API');
+        }
+    } catch (error) {
+        console.error('❌ Lỗi tải standards:', error);
+        showNotification('❌ Lỗi tải danh sách tiêu chuẩn', 'error');
+        
+        // Hiển thị dropdown với các option mẫu để test
+        standardsData = [];
+        updateMaHangDropdown();
+    }
+}
+
+function updateMaHangDropdown() {
+    const dropdown = document.getElementById('maHangDropdown');
+    
+    // Clear dropdown nhưng giữ option đầu tiên
+    const firstOption = dropdown.options[0];
+    dropdown.innerHTML = '';
+    dropdown.appendChild(firstOption);
+    
+    // Thêm option "Tạo mới"
+    const newOption = document.createElement('option');
+    newOption.value = 'new';
+    newOption.textContent = '➕ Tạo tiêu chuẩn mới';
+    dropdown.appendChild(newOption);
+    
+    // Thêm các mã hạng từ standardsData
+    if (standardsData && standardsData.length > 0) {
+        standardsData.forEach(standard => {
+            const option = document.createElement('option');
+            option.value = standard.ma_hang;
+            option.textContent = standard.ma_hang;
+            dropdown.appendChild(option);
+        });
+        console.log('✅ Đã thêm', standardsData.length, 'mã hạng vào dropdown');
+    } else {
+        console.log('⚠️ Không có standardsData để hiển thị');
+        
+        // Thêm một vài mã hạng mẫu để test UI
+        const sampleMaHangs = ['B.01', 'B', 'C', 'D', 'E', 'F'];
+        sampleMaHangs.forEach(maHang => {
+            const option = document.createElement('option');
+            option.value = maHang;
+            option.textContent = maHang;
+            dropdown.appendChild(option);
+        });
+        console.log('📝 Đã thêm mã hạng mẫu để test');
+    }
+}
+        
+
+function updateMaHangDropdown() {
+    const dropdown = document.getElementById('maHangDropdown');
+            
+    // Giữ option "Tạo mới" và thêm các mã hạng
+    const newOption = dropdown.options[1];
+    dropdown.innerHTML = '<option value="">-- Chọn mã hạng --</option>';
+    dropdown.appendChild(newOption);
+            
+    standardsData.forEach(standard => {
+        const option = document.createElement('option');
+        option.value = standard.ma_hang;
+        option.textContent = standard.ma_hang;
+        dropdown.appendChild(option);
+    });
+}
+
+function loadStandard(maHang) {
+    currentMaHang = maHang;
+    
+    console.log('🎯 Loading standard for:', maHang);
+    
+    if (maHang === 'new') {
+        // Tạo mới - hiển thị form trống
+        resetStandardForm();
+        document.getElementById('deleteBtn').style.display = 'none';
+        document.getElementById('currentStandardInfo').style.display = 'none';
+        document.getElementById('saveBtn').innerHTML = '💾 Tạo tiêu chuẩn mới';
+        
+        // 🎯 HIỂN THỊ NÚT LƯU
+        document.getElementById('saveBtn').style.display = 'inline-flex';
+        
+    } else if (maHang) {
+        // Load standard có sẵn
+        const standard = standardsData.find(s => s.ma_hang === maHang);
+        if (standard) {
+            currentEditingStandard = standard;
+            renderStandardForm(standard);
+            document.getElementById('deleteBtn').style.display = 'inline-flex';
+            document.getElementById('currentStandardInfo').style.display = 'block';
+            document.getElementById('currentMaHang').textContent = standard.ma_hang;
+            document.getElementById('currentUpdateTime').textContent = 
+                `Cập nhật: ${new Date(standard.updated_at).toLocaleDateString('vi-VN')}`;
+            document.getElementById('saveBtn').innerHTML = '💾 Cập nhật tiêu chuẩn';
+            
+            // 🎯 HIỂN THỊ NÚT LƯU
+            document.getElementById('saveBtn').style.display = 'inline-flex';
+        }
+    } else {
+        // Không chọn gì - ẩn form VÀ nút lưu
+        document.getElementById('standardEditorBody').innerHTML = '';
+        document.getElementById('deleteBtn').style.display = 'none';
+        document.getElementById('currentStandardInfo').style.display = 'none';
+        
+        // 🎯 ẨN NÚT LƯU
+        document.getElementById('saveBtn').style.display = 'none';
+    }
+}
+
+        function renderStandardForm(standard) {
+    const data = typeof standard.standards_data === 'string' 
+        ? JSON.parse(standard.standards_data) 
+        : standard.standards_data;
+
+    console.log('📊 Raw standards data:', data);
+
+    // 🎯 TRANSFORM DATA từ structure API sang structure frontend
+    const transformedData = {
+        // Lý thuyết
+        phap_luat_min: data.ly_thuyet?.phap_luat?.min || 0,
+        dao_duc_min: data.ly_thuyet?.dao_duc?.min || 0,
+        cau_tao_oto_min: data.ly_thuyet?.cau_tao_oto?.min || 0,
+        ky_thuat_lai_min: data.ly_thuyet?.ky_thuat_lai?.min || 0,
+        nang_hang_min: data.ly_thuyet?.nang_hang?.min || 0,
+        mo_phong_min: data.ly_thuyet?.mo_phong?.min || 0,
+        
+        // Cabin
+        cabin_gio_min: data.cabin?.gio?.min || 0,
+        cabin_bai_min: data.cabin?.bai?.min || 0,
+        
+        // Thực hành
+        thuc_hanh_gio_min: data.thuc_hanh?.gio?.min || 0,
+        thuc_hanh_km_min: data.thuc_hanh?.km?.min || 0,
+        thuc_hanh_dem_min: data.thuc_hanh?.dem?.min || 0,
+        thuc_hanh_tu_dong_min: data.thuc_hanh?.tu_dong?.min || 0,
+        
+        // Kiểm tra
+        kiem_tra_ly_thuyet_min: data.kiem_tra?.ly_thuyet?.min || 0,
+        kiem_tra_mo_phong_min: data.kiem_tra?.mo_phong?.min || 0,
+        kiem_tra_thuc_hanh_min: data.kiem_tra?.thuc_hanh?.min || 0
+    };
+
+    console.log('🔄 Transformed data:', transformedData);
+
+    const formHTML = `
+        <!-- Nhóm LÝ THUYẾT -->
+        <tr class="group-header">
+            <td colspan="4">📚 LÝ THUYẾT (%)</td>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>Pháp luật giao thông</td>
+            <td><input type="number" class="standard-input" data-field="phap_luat_min" value="${transformedData.phap_luat_min}" min="0" max="100"></td>
+            <td class="unit-cell">%</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>Đạo đức người lái xe</td>
+            <td><input type="number" class="standard-input" data-field="dao_duc_min" value="${transformedData.dao_duc_min}" min="0" max="100"></td>
+            <td class="unit-cell">%</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Cấu tạo ôtô</td>
+            <td><input type="number" class="standard-input" data-field="cau_tao_oto_min" value="${transformedData.cau_tao_oto_min}" min="0" max="100"></td>
+            <td class="unit-cell">%</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>Kỹ thuật lái xe</td>
+            <td><input type="number" class="standard-input" data-field="ky_thuat_lai_min" value="${transformedData.ky_thuat_lai_min}" min="0" max="100"></td>
+            <td class="unit-cell">%</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>Nâng hạng</td>
+            <td><input type="number" class="standard-input" data-field="nang_hang_min" value="${transformedData.nang_hang_min}" min="0" max="100"></td>
+            <td class="unit-cell">%</td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td>Mô phỏng</td>
+            <td><input type="number" class="standard-input" data-field="mo_phong_min" value="${transformedData.mo_phong_min}" min="0" max="100"></td>
+            <td class="unit-cell">%</td>
+        </tr>
+
+        <!-- Nhóm CABIN + THỰC HÀNH -->
+        <tr class="group-header">
+            <td colspan="4">🎮 CABIN & THỰC HÀNH</td>
+        </tr>
+        <tr>
+            <td>7</td>
+            <td>Cabin - Số giờ tối thiểu</td>
+            <td><input type="number" class="standard-input" data-field="cabin_gio_min" value="${transformedData.cabin_gio_min}" min="0" step="0.1"></td>
+            <td class="unit-cell">giờ</td>
+        </tr>
+        <tr>
+            <td>8</td>
+            <td>Cabin - Số bài tối thiểu</td>
+            <td><input type="number" class="standard-input" data-field="cabin_bai_min" value="${transformedData.cabin_bai_min}" min="0"></td>
+            <td class="unit-cell">bài</td>
+        </tr>
+        <tr>
+            <td>9</td>
+            <td>Thực hành - Giờ</td>
+            <td><input type="number" class="standard-input" data-field="thuc_hanh_gio_min" value="${transformedData.thuc_hanh_gio_min}" min="0"></td>
+            <td class="unit-cell">giờ</td>
+        </tr>
+        <tr>
+            <td>10</td>
+            <td>Thực hành - KM</td>
+            <td><input type="number" class="standard-input" data-field="thuc_hanh_km_min" value="${transformedData.thuc_hanh_km_min}" min="0"></td>
+            <td class="unit-cell">km</td>
+        </tr>
+        <tr>
+            <td>11</td>
+            <td>Thực hành - Lái đêm</td>
+            <td><input type="number" class="standard-input" data-field="thuc_hanh_dem_min" value="${transformedData.thuc_hanh_dem_min}" min="0" step="0.1"></td>
+            <td class="unit-cell">giờ</td>
+        </tr>
+        <tr>
+            <td>12</td>
+            <td>Thực hành - Tự động</td>
+            <td><input type="number" class="standard-input" data-field="thuc_hanh_tu_dong_min" value="${transformedData.thuc_hanh_tu_dong_min}" min="0" step="0.1"></td>
+            <td class="unit-cell">giờ</td>
+        </tr>
+
+        <!-- Nhóm KIỂM TRA CUỐI KHÓA -->
+        <tr class="group-header">
+            <td colspan="4">📝 KIỂM TRA CUỐI KHÓA (điểm)</td>
+        </tr>
+        <tr>
+            <td>13</td>
+            <td>Lý thuyết</td>
+            <td><input type="number" class="standard-input" data-field="kiem_tra_ly_thuyet_min" value="${transformedData.kiem_tra_ly_thuyet_min}" min="0" max="100"></td>
+            <td class="unit-cell">điểm</td>
+        </tr>
+        <tr>
+            <td>14</td>
+            <td>Mô phỏng</td>
+            <td><input type="number" class="standard-input" data-field="kiem_tra_mo_phong_min" value="${transformedData.kiem_tra_mo_phong_min}" min="0" max="100"></td>
+            <td class="unit-cell">điểm</td>
+        </tr>
+        <tr>
+            <td>15</td>
+            <td>Thực hành</td>
+            <td><input type="number" class="standard-input" data-field="kiem_tra_thuc_hanh_min" value="${transformedData.kiem_tra_thuc_hanh_min}" min="0" max="100"></td>
+            <td class="unit-cell">điểm</td>
+        </tr>
+    `;
+
+    document.getElementById('standardEditorBody').innerHTML = formHTML;
+}
+
+        function resetStandardForm() {
+            const emptyData = {
+                phap_luat_min: 80,
+                dao_duc_min: 80,
+                cau_tao_oto_min: 80,
+                ky_thuat_lai_min: 80,
+                nang_hang_min: 80,
+                mo_phong_min: 80,
+                cabin_gio_min: 0,
+                cabin_bai_min: 0,
+                thuc_hanh_gio_min: 0,
+                thuc_hanh_km_min: 0,
+                thuc_hanh_dem_min: 0,
+                thuc_hanh_tu_dong_min: 0,
+                kiem_tra_ly_thuyet_min: 80,
+                kiem_tra_mo_phong_min: 80,
+                kiem_tra_thuc_hanh_min: 80
+            };
+
+            const tempStandard = {
+                ma_hang: '',
+                standards_data: emptyData
+            };
+
+            renderStandardForm(tempStandard);
+            currentEditingStandard = null;
+        }
+
+    async function deleteCurrentStandard() {
+            if (!currentMaHang || currentMaHang === 'new') {
+                showNotification('❌ Không có tiêu chuẩn để xóa', 'error');
+                return;
+            }
+
+            if (!confirm(`Bạn có chắc muốn xóa tiêu chuẩn "${currentMaHang}"?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/standards/${currentMaHang}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showNotification('✅ Đã xóa tiêu chuẩn thành công', 'success');
+                    loadStandardsForDropdown();
+                    resetStandardForm();
+                    document.getElementById('maHangDropdown').value = '';
+                    document.getElementById('deleteBtn').style.display = 'none';
+                    document.getElementById('currentStandardInfo').style.display = 'none';
+                } else {
+                    showNotification('❌ Lỗi xóa tiêu chuẩn: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showNotification('❌ Lỗi kết nối API', 'error');
+            }
+        }
+
+        // ==================== DASHBOARD FUNCTIONS ====================
+        async function loadDashboardStats() {
+            try {
+                const response = await fetch('/api/admin/stats');
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('totalUsers').textContent = result.stats.totalUsers;
+                    document.getElementById('totalCourses').textContent = result.stats.totalCourses;
+                    document.getElementById('totalStudents').textContent = result.stats.totalStudents;
+                    document.getElementById('totalImports').textContent = result.stats.totalImports;
+                }
+            } catch (error) {
+                // Fallback values
+                document.getElementById('totalUsers').textContent = '3';
+                document.getElementById('totalCourses').textContent = '0';
+                document.getElementById('totalStudents').textContent = '0';
+                document.getElementById('totalImports').textContent = '0';
+            }
+        }
+        
+        function refreshStats() {
+            loadDashboardStats();
+            showNotification('🔄 Đã cập nhật thống kê', 'success');
+        }
+
+        // ==================== UTILITY FUNCTIONS ====================
+        function showNotification(message, type = 'info') {
+            const existingNotifications = document.querySelectorAll('.notification');
+            existingNotifications.forEach(notif => notif.remove());
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 4000);
+        }
+
+        function logout() {
+            if (confirm('Bạn có chắc muốn đăng xuất?')) {
+                // Xóa tất cả storage
+                localStorage.clear();
+                sessionStorage.clear();
+                
+                // Redirect về login page
+                window.location.href = '/login.html';
+            }
+        }
+
+//==============================================================================
+// CHỈ reset dropdown khi load từ API
+async function loadStandardsForDropdown() {
+    try {
+        const response = await fetch('/api/admin/standards/all');
+        const result = await response.json();
+        
+        if (result.success) {
+            standardsData = result.standards || [];
+            updateDropdown(); // 🎯 Chỉ update ở đây
+        }
+    } catch (error) {
+        console.error('Lỗi load standards:', error);
+    }
+}
+
+// Hàm update dropdown - KHÔNG tự reset
+function updateDropdown() {
+    const dropdown = document.getElementById('maHangDropdown');
+    
+    // 🎯 GIỮ LẠI selection hiện tại
+    const currentValue = dropdown.value;
+    
+    // Chỉ update phần options từ API
+    const apiOptions = standardsData.map(standard => 
+        `<option value="${standard.ma_hang}">${standard.ma_hang}</option>`
+    ).join('');
+    
+    dropdown.innerHTML = `
+        <option value="">-- Chọn mã hạng --</option>
+        ${apiOptions}
+        <option value="new">➕ Tạo tiêu chuẩn mới</option>
+    `;
+    
+    // 🎯 GIỮ LẠI selection cũ
+    if (currentValue) {
+        dropdown.value = currentValue;
+    }
+}
+
+function resetForm() {
+    // 🎯 KHÔNG động đến dropdown
+    document.getElementById('maHangDropdown').value = '';
+    renderForm({});
+}
+
+function createNewStandard() {
+    const newMaHang = prompt('Nhập mã hạng mới:');
+    if (!newMaHang) return;
+    
+    // Kiểm tra trùng
+    if (standardsData.find(s => s.ma_hang === newMaHang)) {
+        showNotification('❌ Mã hạng đã tồn tại!', 'error');
+        return;
+    }
+    
+    currentMaHang = newMaHang;
+    
+    // Hiển thị form trống với giá trị mặc định
+    const emptyData = {
+        phap_luat_min: 80,
+        dao_duc_min: 80,
+        cau_tao_oto_min: 80,
+        ky_thuat_lai_min: 80,
+        nang_hang_min: 0,
+        mo_phong_min: 80,
+        cabin_gio_min: 0,
+        cabin_bai_min: 0,
+        thuc_hanh_gio_min: 0,
+        thuc_hanh_km_min: 0,
+        thuc_hanh_dem_min: 0,
+        thuc_hanh_tu_dong_min: 0,
+        kiem_tra_ly_thuyet_min: 80,
+        kiem_tra_mo_phong_min: 80,
+        kiem_tra_thuc_hanh_min: 80
+    };
+    
+    renderStandardForm({ma_hang: newMaHang, standards_data: emptyData});
+    
+    showNotification(`📝 Đang tạo: ${newMaHang} - Hãy nhập thông tin và bấm Lưu`, 'info');
+}
+
+async function saveStandard() {
+    console.log('🔄 Bắt đầu hàm saveStandard...');
+    
+    if (!currentMaHang) {
+        showNotification('❌ Chưa có mã hạng để lưu!', 'error');
+        return;
+    }
+
+    // Thu thập dữ liệu từ form
+    const inputs = document.querySelectorAll('.standard-input');
+    const flatData = {};
+    inputs.forEach(input => {
+        const field = input.getAttribute('data-field');
+        flatData[field] = parseFloat(input.value) || 0;
+    });
+
+    console.log('📦 Data thu thập được:', flatData);
+
+    // Transform data
+    const standardsData = {
+        ly_thuyet: {
+            phap_luat: { min: flatData.phap_luat_min, required: flatData.phap_luat_min > 0 },
+            dao_duc: { min: flatData.dao_duc_min, required: flatData.dao_duc_min > 0 },
+            cau_tao_oto: { min: flatData.cau_tao_oto_min, required: flatData.cau_tao_oto_min > 0 },
+            ky_thuat_lai: { min: flatData.ky_thuat_lai_min, required: flatData.ky_thuat_lai_min > 0 },
+            nang_hang: { min: flatData.nang_hang_min, required: flatData.nang_hang_min > 0 },
+            mo_phong: { min: flatData.mo_phong_min, required: flatData.mo_phong_min > 0 }
+        },
+        cabin: {
+            gio: { min: flatData.cabin_gio_min, required: flatData.cabin_gio_min > 0 },
+            bai: { min: flatData.cabin_bai_min, required: flatData.cabin_bai_min > 0 }
+        },
+        thuc_hanh: {
+            gio: { min: flatData.thuc_hanh_gio_min, required: flatData.thuc_hanh_gio_min > 0 },
+            km: { min: flatData.thuc_hanh_km_min, required: flatData.thuc_hanh_km_min > 0 },
+            dem: { min: flatData.thuc_hanh_dem_min, required: flatData.thuc_hanh_dem_min > 0 },
+            tu_dong: { min: flatData.thuc_hanh_tu_dong_min, required: flatData.thuc_hanh_tu_dong_min > 0 }
+        },
+        kiem_tra: {
+            ly_thuyet: { min: flatData.kiem_tra_ly_thuyet_min, required: flatData.kiem_tra_ly_thuyet_min > 0 },
+            mo_phong: { min: flatData.kiem_tra_mo_phong_min, required: flatData.kiem_tra_mo_phong_min > 0 },
+            thuc_hanh: { min: flatData.kiem_tra_thuc_hanh_min, required: flatData.kiem_tra_thuc_hanh_min > 0 }
+        }
+    };
+
+    try {
+        // 🎯 LUÔN DÙNG POST - backend sẽ tự xử lý upsert
+        const response = await fetch('/api/admin/standards', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                ma_hang: currentMaHang,
+                standards_data: standardsData,
+                ap_dung_tu_ngay: '2025-01-01'
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showNotification('✅ Lưu tiêu chuẩn thành công!', 'success');
+            
+            // Tự refresh dropdown
+            setTimeout(() => {
+                loadStandardsForDropdown();
+            }, 1000);
+        } else {
+            showNotification('❌ Lỗi: ' + result.error, 'error');
+        }
+        
+    } catch (error) {
+        console.error('💥 Lỗi kết nối:', error);
+        showNotification('❌ Lỗi kết nối API: ' + error.message, 'error');
+    }
+}
+
+        // ==================== AUTO LOGOUT ON BROWSER CLOSE ====================
+        window.addEventListener('beforeunload', function() {
+            // Không cần làm gì cả - sessionStorage sẽ tự động clear khi đóng trình duyệt
+        });
+    </script>
+</body>
+</html>

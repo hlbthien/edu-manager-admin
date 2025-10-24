@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduManager - Quản lý Học viên</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --success-color: #16a34a;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --text-color: #334155;
+            --border-color: #e2e8f0;
+            --bg-color: #f8fafc;
+            --hover-color: #f1f5f9;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            margin: 0;
+            padding: 8px;
+            background: var(--bg-color);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: var(--text-color);
+            line-height: 1.5;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .header {
+            background: white;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 22px;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        .header-buttons {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            min-height: 36px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .template-btn {
+            background: var(--warning-color);
+        }
+        
+        .export-btn {
+            background: var(--success-color);
+        }
+        
+        .table-section {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        .table-header {
+            background:#354e82;
+            padding: 12px 15px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 2px;
+        }
+        
+        .header-info {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .header-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .header-controls {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .course-dropdown, .search-input {
+            height: 36px;
+            padding: 0 12px;
+            font-size: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .course-dropdown {
+            font-size: 15px;
+            min-width: 250px;
+        }
+        
+        .search-input {
+            min-width: 200px;
+        }
+        
+        .course-dropdown::placeholder,
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .course-dropdown:hover, .search-input:hover {
+            border-color: rgba(255, 254, 254, 0.5);
+            background: rgba(255, 255, 255, 0.521);
+        }
+        
+        .course-dropdown:focus, .search-input:focus {
+            outline: none;
+            border-color: white;
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+        }
+        
+        .course-dropdown option {
+            color: #333;
+            background: white;
+        }
+        
+        .table-container {
+            max-height: calc(100vh - 180px);
+            overflow: auto;
+        }
+        
+        #studentsTable {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        
+        #studentsTable thead {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        #studentsTable th {
+            background: var(--hover-color);
+            padding: 10px 8px;
+            border: 1px solid var(--border-color);
+            font-weight: bold;
+            text-align: center;
+            color: var(--primary-color);
+        }
+        
+        #studentsTable td {
+            padding: 8px 6px;
+            border: 1px solid var(--hover-color);
+            text-align: center;
+        }
+        
+        #studentsTable tbody tr:hover {
+            background-color: var(--hover-color);
+            transition: background-color 0.2s;
+        }
+        
+        .empty-state {
+            padding: 50px 20px;
+            text-align: center;
+            color: #64748b;
+        }
+        
+        .user-info {
+            font-size: 14px;
+            text-align: right;
+        }
+        
+        .logout-link {
+            color: var(--danger-color);
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        
+        .logout-link:hover {
+            text-decoration: none;
+        }
+        /* Lý thuyết */
+#studentsTable thead tr:nth-child(2) th:nth-child(1),
+#studentsTable thead tr:nth-child(2) th:nth-child(2),
+#studentsTable thead tr:nth-child(2) th:nth-child(3),
+#studentsTable thead tr:nth-child(2) th:nth-child(4),
+#studentsTable thead tr:nth-child(2) th:nth-child(5),
+#studentsTable thead tr:nth-child(2) th:nth-child(6) {
+    background-color: #a9fcd0;
+}
+/* Cabin */
+#studentsTable thead tr:nth-child(2) th:nth-child(7),
+#studentsTable thead tr:nth-child(2) th:nth-child(8) {
+    background-color: #67fcac;
+}
+/* Thực hành */
+#studentsTable thead tr:nth-child(2) th:nth-child(9),
+#studentsTable thead tr:nth-child(2) th:nth-child(10),
+#studentsTable thead tr:nth-child(2) th:nth-child(11),
+#studentsTable thead tr:nth-child(2) th:nth-child(12) {
+    background-color: #13fc80;
+}
+        
+        /* ==================== LOADING STATES ==================== */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .course-loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        
+        /* ==================== RESPONSIVE MOBILE ==================== */
+        @media (max-width: 768px) {
+            .container {
+                padding: 5px;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 10px;
+                padding: 8px 12px;
+            }
+            
+            .header-buttons {
+                width: 100%;
+                justify-content: space-between;
+                gap: 5px;
+            }
+            
+            .btn {
+                padding: 6px 12px;
+                font-size: 13px;
+                flex: 1;
+                min-height: 32px;
+            }
+            
+            .table-header {
+                flex-direction: column;
+                gap: 5px;
+                padding: 10px;
+            }
+            
+            .header-info {
+                min-width: auto;
+                width: 100%;
+                text-align: center;
+            }
+            
+            .header-controls {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .course-dropdown, .search-input {
+                min-width: 100%;
+                font-size: 13px;
+            }
+            
+            .table-container {
+                max-height: calc(100vh - 220px);
+                font-size: 12px;
+            }
+            
+            #studentsTable {
+                font-size: 11px;
+            }
+            
+            #studentsTable th {
+                padding: 6px 4px;
+                font-size: 10px;
+            }
+            
+            #studentsTable td {
+                padding: 5px 3px;
+                font-size: 10px;
+            }
+            
+            .user-info {
+                font-size: 12px;
+                text-align: center;
+                width: 100%;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 16px;
+            }
+            
+            .table-header {
+                font-size: 12px;
+                padding: 8px;
+            }
+            
+            .header-title {
+                font-size: 14px;
+            }
+             
+            #studentsTable th {
+                padding: 4px 2px;
+                font-size: 9px;
+            }
+            
+            #studentsTable td {
+                padding: 3px 1px;
+                font-size: 9px;
+            }
+        }
+        
+
+        .no-results {
+    text-align: center;
+    padding: 30px 15px;
+    color: #64748b;
+    font-style: italic;
+}
+
+.no-results-card {
+    text-align: center;
+    padding: 30px 15px;
+    color: #64748b;
+    font-style: italic;
+    margin: 10px 0;
+}
+/* ==================== CARD VIEW MOBILE ==================== */
+@media (max-width: 768px) {
+    .table-container {
+        overflow-x: visible;
+        max-height: none;
+        padding: 0 6px;
+    }
+    
+    #studentsTable {
+        display: none !important;
+    }
+    
+    /* Ẩn nút Export trên mobile */
+    .export-btn {
+        display: none !important;
+    }
+    
+    .cards-container {
+        display: block !important;
+        padding: 6px 0;
+    }
+    
+    .student-card {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 8px; /* Giảm margin */
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+    
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 10px; /* Giảm margin */
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .student-info {
+        flex: 1;
+    }
+    
+    /* Ẩn mã học viên trên mobile */
+    .student-code {
+        display: none;
+    }
+    
+    .student-name {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-color);
+        line-height: 1.3;
+        margin: 0;
+    }
+    
+    .card-sections {
+        display: flex;
+        flex-direction: column;
+        gap: 10px; /* Giảm gap */
+    }
+    
+    .card-section {
+        border: 1px solid var(--hover-color);
+        border-radius: 6px;
+        padding: 10px; /* Giảm padding */
+        background: #fafbfc;
+        margin-bottom: 0;
+    }
+    
+    .section-title {
+        font-size: 13px;
+        font-weight: bold;
+        color: var(--primary-color);
+        margin-bottom: 6px; /* Giảm margin */
+        text-transform: uppercase;
+    }
+    
+    .section-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px; /* Giảm gap */
+    }
+    
+    .data-item {
+        display: flex;
+        flex-direction: column;
+        padding: 2px 0; /* Giảm padding */
+        margin: 0;
+    }
+    
+    .data-label {
+        font-size: 11px;
+        color: #64748b;
+        margin-bottom: 2px; /* Giảm margin */
+        font-weight: 500;
+    }
+    
+    .data-value {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-color);
+        margin: 0;
+    }
+    
+    .completion-badge {
+        background: var(--success-color);
+        color: white;
+        padding: 4px 8px; /* Giảm padding */
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: bold;
+        white-space: nowrap;
+        margin-left: 6px;
+    }
+    
+    .progress-badge {
+        background: var(--warning-color);
+        color: white;
+        padding: 4px 8px; /* Giảm padding */
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: bold;
+        white-space: nowrap;
+        margin-left: 6px;
+    }
+    
+    .no-results-card {
+        text-align: center;
+        padding: 30px 15px; /* Giảm padding */
+        color: #64748b;
+        font-style: italic;
+        margin: 0;
+    }
+    
+    .no-results {
+        padding: 30px 15px; /* Giảm padding */
+        text-align: center;
+        color: #64748b;
+        font-style: italic;
+        margin: 0;
+    }
+    
+    .no-results div:first-child {
+        font-size: 28px; /* Giảm size */
+        margin-bottom: 8px; /* Giảm margin */
+    }
+}
+
+/* ==================== OPTIMAL PC ZOOM ==================== */
+@media (min-width: 769px) and (max-width: 1399px) {
+    .table-section {
+        transform: scale(0.9);
+        transform-origin: top center;
+        width: 111.11%;
+    }
+    
+    .header {
+        transform: scale(0.9);
+        transform-origin: top center;
+        width: 111.11%;
+    }
+}
+
+/* ==================== SPECIFIC FIX FOR 1366x768 ==================== */
+@media (width: 1366px) and (height: 768px) {
+    .table-section {
+        transform: scale(0.87);
+        transform-origin: top left;
+        width: 114.94%;
+        margin-left: -15px;
+    }
+    
+    .header {
+        transform: scale(0.87);
+        transform-origin: top left;
+        width: 114.94%;
+        margin-left: -15px;
+    }
+}
+
+@media (min-width: 1400px) {
+    .table-section,
+    .header {
+        transform: none;
+        width: 100%;
+        margin-left: 0;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 EDU MANAGER</h1>
+        </div>
+        <div class="table-section">
+            <div class="table-header">
+                <div class="header-controls">
+                    <select id="courseSelect" class="course-dropdown"><option value="">📚 Chọn khóa học...</option></select>
+                    <span id="progressStats">- Chọn khóa học để xem thống kê</span>
+                    <input type="text" id="studentSearch" class="search-input" placeholder="🔍 Tìm kiếm học viên...">
+                    <button id="importExcelBtn" class="btn import-btn">📥 Import</button>
+                    <button id="exportExcelBtn" class="btn export-btn" disabled>📊 Xuất</button>
+                    <button id="exportTemplateBtn" class="btn template-btn">📋 Mẫu</button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="studentsTable">
+                    <thead>
+                        <tr>
+                            <th rowspan="3">#</th>
+                            <th rowspan="3">Mã học viên</th>
+                            <th rowspan="3">Họ và tên</th>
+                            <th colspan="6">Giờ học lý thuyết</th>
+                            <th colspan="2">Cabin điện tử</th>
+                            <th colspan="4">Thực hành lái xe</th>
+                            <th colspan="4">Kiểm tra cuối khóa</th>
+                        </tr>
+                        <tr>
+                            <th>Pháp luật</th>
+                            <th>Đạo đức</th>
+                            <th>Cấu tạo oto</th>
+                            <th>Kỹ thuật lái</th>
+                            <th>Nâng hạng</th>
+                            <th>Mô phỏng</th>
+                            <th>Giờ</th>
+                            <th>Số bài</th>
+                            <th>Thời gian</th>
+                            <th>Quãng đường</th>
+                            <th>Giờ đêm</th>
+                            <th>Giờ tự động</th>
+                            <th>Lý thuyết</th>
+                            <th>Mô phỏng</th>
+                            <th>Thực hành</th>
+                            <th>Hoàn thành</th>
+                        </tr>
+                        <tr>
+                            <!-- Dòng thứ 3 để trống -->
+                        </tr>
+                    </thead>
+                    <tbody id="studentsTableBody">
+                        <tr>
+                            <td colspan="20">
+                                <div class="empty-state">
+                                    <div>📝</div>
+                                    <div>Chọn khóa học để xem danh sách học viên</div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="cards-container" id="cardsContainer" style="display: none;">
+                    <!-- Cards sẽ được render bằng JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/js/utils.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <script src="/js/api.js"></script>
+    <script src="/js/app.js"></script>
+    <script src="/js/courses.js"></script>
+    <script src="/js/students.js"></script>
+    <script src="/js/scores-import.js"></script>
+    <script src="/js/excel-export.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Kiểm tra đăng nhập
+            const isLoggedIn = localStorage.getItem('userLoggedIn');
+            if (!isLoggedIn) {
+                window.location.href = '/login.html';
+                return;
+            }
+
+            // Hiển thị thông tin người dùng
+            const username = localStorage.getItem('username');
+            const fullName = localStorage.getItem('fullName');
+            const userRole = localStorage.getItem('userRole');
+            
+            const header = document.querySelector('.header');
+            if (header) {
+                const userInfo = document.createElement('div');
+                userInfo.className = 'user-info';
+                userInfo.innerHTML = `Xin chào <strong>${fullName || username}</strong> • <span class="logout-link" onclick="logout()">Đăng xuất</span>`;
+                header.appendChild(userInfo);
+            }
+
+            // Quản lý quyền người dùng
+            const importBtn = document.getElementById('importExcelBtn');
+            const templateBtn = document.getElementById('exportTemplateBtn');
+            
+            if (importBtn && userRole !== 'giaovien' && userRole !== 'teacher') {
+                importBtn.style.display = 'none';
+            }
+            if (templateBtn && userRole !== 'giaovien' && userRole !== 'teacher') {
+                templateBtn.style.display = 'none';
+            }
+
+            // Tìm kiếm học viên
+            // SEARCH CÓ RESPONSIVE MOBILE - HOÀN CHỈNH
+const searchInput = document.getElementById('studentSearch');
+if (searchInput) {
+    let searchTimeout;
+    
+    searchInput.addEventListener('input', function(e) {
+        clearTimeout(searchTimeout);
+        
+        searchTimeout = setTimeout(() => {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            const isMobile = window.innerWidth <= 768;
+            
+            if (isMobile) {
+                // MOBILE VIEW: Filter cards
+                const cardsContainer = document.getElementById('cardsContainer');
+                const cards = cardsContainer?.getElementsByClassName('student-card') || [];
+                
+                let visibleCount = 0;
+                for (let card of cards) {
+                    const studentName = card.querySelector('.student-name')?.textContent?.toLowerCase() || '';
+                    const isVisible = studentName.includes(searchTerm) || searchTerm === '';
+                    card.style.display = isVisible ? '' : 'none';
+                    if (isVisible) visibleCount++;
+                }
+                
+                // Hiển thị thông báo nếu không tìm thấy
+                showNoResultsIfNeeded(searchTerm, visibleCount);
+                
+            } else {
+                // DESKTOP VIEW: Filter table
+                const tbody = document.getElementById('studentsTableBody');
+                const rows = tbody?.getElementsByTagName('tr') || [];
+                
+                let visibleCount = 0;
+                for (let row of rows) {
+                    if (row.cells.length < 3) continue;
+                    const studentName = row.cells[2]?.textContent?.toLowerCase() || '';
+                    const studentCode = row.cells[1]?.textContent?.toLowerCase() || '';
+                    const isVisible = studentName.includes(searchTerm) || studentCode.includes(searchTerm) || searchTerm === '';
+                    row.style.display = isVisible ? '' : 'none';
+                    if (isVisible) visibleCount++;
+                }
+                
+                // Hiển thị thông báo nếu không tìm thấy
+                showNoResultsIfNeeded(searchTerm, visibleCount);
+            }
+        }, 300);
+    });
+}
+
+// Hàm hiển thị thông báo không tìm thấy
+function showNoResultsIfNeeded(searchTerm, visibleCount) {
+    // Xóa thông báo cũ
+    removeNoResultsMessage();
+    
+    // Hiển thị thông báo mới nếu không có kết quả
+    if (visibleCount === 0 && searchTerm !== '') {
+        const isMobile = window.innerWidth <= 768;
+        
+        if (isMobile) {
+            // Mobile: thêm thông báo vào cards container
+            const cardsContainer = document.getElementById('cardsContainer');
+            const noResultsCard = document.createElement('div');
+            noResultsCard.className = 'no-results-card';
+            noResultsCard.innerHTML = `
+                <div class="no-results">
+                    <div>🔍</div>
+                    <div>Không tìm thấy học viên nào với từ khóa: "${searchTerm}"</div>
+                </div>
+            `;
+            cardsContainer.appendChild(noResultsCard);
+        } else {
+            // Desktop: thêm thông báo vào table
+            const tbody = document.getElementById('studentsTableBody');
+            const noResultsRow = document.createElement('tr');
+            noResultsRow.innerHTML = `
+                <td colspan="20">
+                    <div class="no-results">
+                        <div>🔍</div>
+                        <div>Không tìm thấy học viên nào với từ khóa: "${searchTerm}"</div>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(noResultsRow);
+        }
+    }
+}
+
+// Hàm xóa thông báo không tìm thấy
+function removeNoResultsMessage() {
+    const noResults = document.querySelectorAll('.no-results');
+    noResults.forEach(element => {
+        element.closest('tr')?.remove();
+        element.closest('.no-results-card')?.remove();
+    });
+}
+
+            // Xử lý nút Export
+            const exportBtn = document.getElementById('exportExcelBtn');
+            if (exportBtn) {
+                exportBtn.addEventListener('click', function() {
+                    if (window.excelExport && !exportBtn.disabled) {
+                        window.excelExport.exportToExcel();
+                    }
+                });
+            }
+
+            // Xử lý khi chọn khóa học
+            const courseSelect = document.getElementById('courseSelect');
+            if (courseSelect) {
+                courseSelect.addEventListener('change', function() {
+                    const selectedCourse = this.value;
+                    if (selectedCourse) {
+                        // Cập nhật thống kê
+                        const progressStats = document.getElementById('progressStats');
+                        progressStats.innerHTML = `Đang tải thống kê cho khóa học...`;
+                        
+                        // Kích hoạt nút Export
+                        exportBtn.disabled = false;
+                        
+                        // TODO: Gọi API để lấy dữ liệu học viên
+                        // loadStudentsData(selectedCourse);
+                    } else {
+                        const progressStats = document.getElementById('progressStats');
+                        progressStats.innerHTML = `- Chọn khóa học để xem thống kê`;
+                        exportBtn.disabled = true;
+                    }
+                });
+            }
+        });
+
+        function logout() {
+            if (confirm('Bạn có chắc muốn đăng xuất?')) {
+                localStorage.clear();
+                window.location.href = '/login.html';
+            }
+        }
+
+        // Hàm hiển thị loading
+        function showLoading() {
+            const tableSection = document.querySelector('.table-section');
+            if (tableSection) {
+                const loadingOverlay = document.createElement('div');
+                loadingOverlay.className = 'loading-overlay';
+                loadingOverlay.innerHTML = '<div class="loading-spinner"></div><div>Đang tải dữ liệu...</div>';
+                tableSection.style.position = 'relative';
+                tableSection.appendChild(loadingOverlay);
+            }
+        }
+
+        // Hàm ẩn loading
+        function hideLoading() {
+            const loadingOverlay = document.querySelector('.loading-overlay');
+            if (loadingOverlay) {
+                loadingOverlay.remove();
+            }
+        }
+
+       
+    </script>
+</body>
+</html>
