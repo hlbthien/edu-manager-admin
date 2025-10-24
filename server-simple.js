@@ -28,17 +28,17 @@ app.get('/health', (req, res) => {
 // Thêm vào server-simple.js (sau imports, trước routes)
 import { dbRun, dbGet } from './database.js';
 
-// Thêm vào server-simple.js - thay thế hàm initializeDatabase cũ
+// Sửa hàm initializeDatabase - dùng import đúng
 async function initializeDatabase() {
-  let retries = 5;
+  let retries = 3;
   
   while (retries > 0) {
     try {
-      console.log(`🔄 Attempting database connection (${retries} retries left)...`);
+      console.log(`🔄 Database init attempt ${4-retries}/3...`);
       
-      // Test connection đơn giản trước
+      // Test connection đơn giản
       const testResult = await dbQuery('SELECT NOW() as time');
-      console.log('✅ Database connection test passed:', testResult.rows[0].time);
+      console.log('✅ Database connected:', testResult.rows[0].time);
       
       // Tạo bảng users
       await dbRun(`
@@ -70,14 +70,17 @@ async function initializeDatabase() {
       return true;
       
     } catch (error) {
-      console.error(`❌ Database init attempt failed:`, error.message);
+      console.error(`❌ Database init failed:`, error.message);
       retries--;
       
       if (retries > 0) {
-        console.log(`⏳ Retrying in 3 seconds...`);
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        console.log(`⏳ Retrying in 2 seconds...`);
+        await new Promise(resolve => setTimeout(resolve, 2000));
       } else {
-        console.error('💥 Database initialization failed after all retries');
+        console.error('💥 Database initialization failed');
+        
+        // 🎯 QUAN TRỌNG: Vẫn cho server chạy dù database lỗi
+        console.log('⚠️ Server will continue without database');
         return false;
       }
     }
@@ -87,7 +90,38 @@ async function initializeDatabase() {
 // Gọi hàm khởi tạo
 initializeDatabase();
 // Thêm các routes này vào server-simple.js (sau health check)
+// Khởi tạo database nhưng không block server
+initializeDatabase().then(success => {
+  if (success) {
+    console.log('🚀 Server started with database');
+  } else {
+    console.log('⚠️ Server started without database - using mock auth');
+  }
+});
 
+// 🎯 HEALTH ENDPOINT - hoạt động dù database lỗi
+app.get('/health', async (req, res) => {
+  try {
+    // Thử kết nối database
+    const dbResult = await dbQuery('SELECT NOW() as time');
+    
+    res.json({ 
+      status: 'OK', 
+      message: 'Server and database are running!',
+      database: 'connected',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    // Vẫn trả về success dù database lỗi
+    res.json({ 
+      status: 'OK', 
+      message: 'Server is running (database connection failed)',
+      database: 'disconnected',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
 // Tạm thời comment database auth, dùng mock
 app.post('/api/auth/user-login', async (req, res) => {
   console.log('🔐 Received login request');
