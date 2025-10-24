@@ -1,7 +1,10 @@
-// server-simple.js - Phiên bản đơn giản để deploy
+// server-simple.js - SỬA IMPORTS
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
+
+// 🎯 QUAN TRỌNG: Import đúng các hàm từ database.js
+import { dbQuery, dbGet, dbRun } from './database.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
