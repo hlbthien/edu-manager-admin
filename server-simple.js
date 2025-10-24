@@ -25,51 +25,59 @@ app.get('/health', (req, res) => {
 // Thêm vào server-simple.js (sau imports, trước routes)
 import { dbRun, dbGet } from './database.js';
 
-// Database initialization
+// Thêm vào server-simple.js - thay thế hàm initializeDatabase cũ
 async function initializeDatabase() {
-  try {
-    console.log('🔄 Initializing database tables...');
-    
-    // 1. Tạo bảng users
-    await dbRun(`
-      CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        username VARCHAR(100) UNIQUE NOT NULL,
-        password_hash VARCHAR(255) NOT NULL,
-        full_name VARCHAR(200),
-        role VARCHAR(50) DEFAULT 'viewer',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    console.log('✅ Users table ready');
-    
-    // 2. Tạo bảng tokens
-    await dbRun(`
-      CREATE TABLE IF NOT EXISTS tokens (
-        id SERIAL PRIMARY KEY,
-        token_type VARCHAR(50) NOT NULL,
-        token_value TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    console.log('✅ Tokens table ready');
-    
-    // 3. Tạo admin user nếu chưa có
-    const userCount = await dbGet('SELECT COUNT(*) as count FROM users');
-    if (parseInt(userCount.count) === 0) {
-      const bcrypt = await import('bcryptjs');
-      const hashedPassword = await bcrypt.default.hash('admin123', 10);
+  let retries = 5;
+  
+  while (retries > 0) {
+    try {
+      console.log(`🔄 Attempting database connection (${retries} retries left)...`);
       
-      await dbRun(
-        'INSERT INTO users (username, password_hash, full_name, role) VALUES ($1, $2, $3, $4)',
-        ['admin', hashedPassword, 'Administrator', 'admin']
-      );
-      console.log('✅ Admin user created: admin / admin123');
+      // Test connection đơn giản trước
+      const testResult = await dbQuery('SELECT NOW() as time');
+      console.log('✅ Database connection test passed:', testResult.rows[0].time);
+      
+      // Tạo bảng users
+      await dbRun(`
+        CREATE TABLE IF NOT EXISTS users (
+          id SERIAL PRIMARY KEY,
+          username VARCHAR(100) UNIQUE NOT NULL,
+          password_hash VARCHAR(255) NOT NULL,
+          full_name VARCHAR(200),
+          role VARCHAR(50) DEFAULT 'viewer',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      console.log('✅ Users table ready');
+      
+      // Tạo admin user
+      const userCount = await dbGet('SELECT COUNT(*) as count FROM users');
+      if (parseInt(userCount.count) === 0) {
+        const bcrypt = await import('bcryptjs');
+        const hashedPassword = await bcrypt.default.hash('admin123', 10);
+        
+        await dbRun(
+          'INSERT INTO users (username, password_hash, full_name, role) VALUES ($1, $2, $3, $4)',
+          ['admin', hashedPassword, 'Administrator', 'admin']
+        );
+        console.log('✅ Admin user created: admin / admin123');
+      }
+      
+      console.log('🎉 Database initialization completed!');
+      return true;
+      
+    } catch (error) {
+      console.error(`❌ Database init attempt failed:`, error.message);
+      retries--;
+      
+      if (retries > 0) {
+        console.log(`⏳ Retrying in 3 seconds...`);
+        await new Promise(resolve => setTimeout(resolve, 3000));
+      } else {
+        console.error('💥 Database initialization failed after all retries');
+        return false;
+      }
     }
-    
-    console.log('🎉 Database initialization completed!');
-  } catch (error) {
-    console.error('❌ Database initialization error:', error.message);
   }
 }
 
@@ -77,56 +85,32 @@ async function initializeDatabase() {
 initializeDatabase();
 // Thêm các routes này vào server-simple.js (sau health check)
 
-// Authentication routes
+// Tạm thời comment database auth, dùng mock
 app.post('/api/auth/user-login', async (req, res) => {
+  console.log('🔐 Received login request');
+  
   try {
     const { username, password } = req.body;
     
-    console.log(`🔐 Login attempt: ${username}`);
+    // MOCK AUTHENTICATION - Tạm thời dùng mock
+    if (username === 'admin' && password === 'admin123') {
+      return res.json({
+        success: true,
+        user: {
+          id: 1,
+          username: 'admin',
+          fullName: 'Administrator',
+          role: 'admin'
+        },
+        message: 'Đăng nhập thành công! (Mock)'
+      });
+    } else {
+      return res.json({
+        success: false,
+        error: 'Sai thông tin đăng nhập. Thử: admin / admin123'
+      });
+    }
     
-    if (!username || !password) {
-      return res.json({
-        success: false,
-        error: 'Username và password là bắt buộc'
-      });
-    }
-
-    // Tìm user trong database
-    const user = await dbGet(
-      'SELECT * FROM users WHERE username = $1', 
-      [username]
-    );
-
-    if (!user) {
-      return res.json({
-        success: false,
-        error: 'User không tồn tại'
-      });
-    }
-
-    // Verify password
-    const bcrypt = await import('bcryptjs');
-    const isValid = await bcrypt.default.compare(password, user.password_hash);
-
-    if (!isValid) {
-      return res.json({
-        success: false,
-        error: 'Sai mật khẩu'
-      });
-    }
-
-    // Login successful
-    res.json({
-      success: true,
-      user: {
-        id: user.id,
-        username: user.username,
-        fullName: user.full_name,
-        role: user.role
-      },
-      message: 'Đăng nhập thành công!'
-    });
-
   } catch (error) {
     console.error('🚨 Login error:', error);
     res.json({
@@ -158,6 +142,29 @@ app.get('/api/test', (req, res) => {
     message: 'API is working perfectly! 🎉',
     version: '1.0.0-simple'
   });
+});
+
+// Sửa health endpoint trong server-simple.js
+app.get('/health', async (req, res) => {
+  try {
+    // Test database connection
+    const dbResult = await dbQuery('SELECT NOW() as time');
+    
+    res.json({ 
+      status: 'OK', 
+      message: 'Server and database are running!',
+      timestamp: new Date().toISOString(),
+      database_time: dbResult.rows[0].time,
+      environment: process.env.NODE_ENV || 'development'
+    });
+  } catch (error) {
+    res.json({ 
+      status: 'WARNING', 
+      message: 'Server running but database connection failed',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // 🎯 SERVE STATIC FILES

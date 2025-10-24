@@ -8,7 +8,12 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.NODE_ENV === 'production' ? { 
     rejectUnauthorized: false 
-  } : false
+  } : false,
+  // Thêm connection settings
+  max: 10,                    // Giới hạn connections
+  idleTimeoutMillis: 30000,   // 30 seconds
+  connectionTimeoutMillis: 5000, // 5 seconds timeout
+  maxUses: 7500,              // Giới hạn sử dụng mỗi connection
 });
 
 // Connection events
